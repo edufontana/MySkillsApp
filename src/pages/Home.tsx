@@ -12,9 +12,14 @@ import {
   Alert,
 } from 'react-native';
 
+interface SkillProps {
+  id: string;
+  skill: string;
+}
+
 export function Home() {
   const [newSkill, setNewSkill] = useState('');
-  const [mySKills, setMySkills] = useState([]);
+  const [mySKills, setMySkills] = useState<SkillProps[]>([]);
   const [greetings, setGreeting] = useState('');
 
   useEffect(() => {
@@ -30,14 +35,23 @@ export function Home() {
   }, []);
 
   function handleAddNewSkill() {
+    const data = {
+      id: String(new Date().getTime()),
+      skill: newSkill,
+    };
+
     if (newSkill === '') {
       Alert.alert('Preencha o campo!');
 
       return;
     }
 
-    setMySkills(oldState => [...oldState, newSkill]);
+    setMySkills(oldState => [...oldState, data]);
     setNewSkill('');
+  }
+
+  function handlerRemoveSkill(id: string) {
+    setMySkills(oldState => oldState.filter(skill => skill.id !== id));
   }
 
   return (
@@ -51,14 +65,19 @@ export function Home() {
         onChangeText={setNewSkill}
         value={newSkill}
       />
-      <Button onPress={handleAddNewSkill} />
+      <Button onPress={handleAddNewSkill} title="Add" />
 
       <Text style={[styles.Title, {marginVertical: 50}]}>My Skills</Text>
 
       <FlatList
         data={mySKills}
-        keyExtractor={item => item}
-        renderItem={({item}) => <SkillsCards skills={item} />}
+        keyExtractor={item => item.id}
+        renderItem={({item}) => (
+          <SkillsCards
+            onPress={() => handlerRemoveSkill(item.id)}
+            skills={item.skill}
+          />
+        )}
       />
     </SafeAreaView>
   );
